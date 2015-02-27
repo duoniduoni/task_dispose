@@ -1,2 +1,5 @@
 Debug/*
 task_dispose/Debug/*
+*.ipch
+*.bmp
+task_dispose.opensdf
