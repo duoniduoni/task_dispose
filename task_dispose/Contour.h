@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <vector>
-#include <list>
 
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -21,6 +20,7 @@ public:
 	void addPoint(CvPoint & point);
 
 	void drawContour(Mat & show);
+	CvRect getRectange() { return range; }
 
 private:
 	vector<CvPoint> points;				//特征所包含的点
@@ -38,7 +38,7 @@ public:
 	void analyse(Mat & src);
 
 	int getContourCount() { return contours.size(); }
-	Contour & getContour(int index) { if(index < contours.size()) return * contours[index]; }
+	Contour & getContour(int index) { return * contours[min(index, (int)contours.size() -1)]; }
 
 private:
 	vector<Contour *> contours;

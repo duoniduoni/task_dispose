@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <vector>
+#include <list>
 #include "Contour.h"
 
 #include "opencv2/imgproc/imgproc.hpp"
@@ -54,7 +55,7 @@ int _tmain(int argc, char * argv[])
 	for(int i = 0; i < cm.getContourCount(); ++i)
 		cm.getContour(i).drawContour(show);
 	imshow(WNAME, show);
-	imwrite("c:\\task3.bmp", show);
+	imwrite("task3.bmp", show);
 
 	cout << "press any key to into next step !" << endl;
 	cvWaitKey(0);

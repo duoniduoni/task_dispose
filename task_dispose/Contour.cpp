@@ -74,20 +74,24 @@ void Contour::drawContour(Mat & show)
 		return ;
 
 	Vec3b color(0, 0, 0);
-	color[rand()%3] = 255;
+	color[0] = 100 + rand() % 155;
+	color[1] = 100 + rand() % 155;
+	color[2] = 100 + rand() % 155;
 	Vec3b * p = show.ptr<Vec3b>(0);
 	int curline = 0;
+//	rectangle(show, range, cvScalar(color[0], color[1], color[2]));
+
 	for(int i = 0; i < points.size(); i++)
 	{
-		if(points[i].x != curline)
+		if(points[i].y != curline)
 		{
-			curline = points[i].x;
+			curline = points[i].y;
 			p = show.ptr<Vec3b>(curline);
 		}
 
-		p[points[i].y][2] = color[2];
-		p[points[i].y][1] = color[1];
-		p[points[i].y][0] = color[0];
+		p[points[i].x][2] = color[2];
+		p[points[i].x][1] = color[1];
+		p[points[i].x][0] = color[0];
 	}
 }
 
@@ -118,12 +122,12 @@ void ContourManager::analyse(Mat & src)
 	double t = (double)getTickCount();
 
 	//初步分析
-	for(int x = 0; x < src.rows; ++x)
+	for(int y = 0; y < src.rows; ++y)
 	{
-		uchar * rdata = src.ptr<uchar>(x);
-		for(int y = 0; y < src.cols; ++y)
+		uchar * rdata = src.ptr<uchar>(y);
+		for(int x = 0; x < src.cols; ++x)
 		{
-			if(rdata[y] != 255)
+			if(rdata[x] != 255)
 				continue;
 
 			if(contours.size() == 0)
@@ -158,6 +162,62 @@ void ContourManager::analyse(Mat & src)
 	}
 
 	//进一步分析 进行合并
+	vector<Contour *> tmp = contours;
+	contours.clear();
+
+	while(tmp.size() >= 1)
+	{
+		Contour * record = tmp[0];
+		tmp.erase(tmp.begin());
+
+		vector<Contour *>::iterator itVec = tmp.begin();
+		
+		for ( ; itVec != tmp.end(); )
+		{
+			bool flag = false;
+
+			Contour & con1 = *record;
+			Contour & con2 = *(*itVec);
+
+			CvPoint center1, center2;
+			center1.x = con1.getRectange().x + con1.getRectange().width / 2;
+			center1.y = con1.getRectange().y + con1.getRectange().height / 2;
+			center2.x = con2.getRectange().x + con2.getRectange().width / 2;
+			center2.y = con2.getRectange().y + con2.getRectange().height / 2;
+
+			int width1 = con1.getRectange().width;
+			int width2 = con2.getRectange().width;
+			int height1 = con1.getRectange().height;
+			int height2 = con2.getRectange().height;
+	
+
+			if(
+				abs(center1.x - center2.x) <= (width1 + width2)/2 &&
+				abs(center1.y - center2.y) <= (height1 + height2)/2
+				)
+			{
+				//包含
+				flag = true;
+
+				for(int i = 0; i < con2.getPoints().size(); ++i)
+					con1.addPoint(con2.getPoints().at(i));
+
+				delete *itVec;
+			}
+			else
+			{
+				//不相连
+			}
+/**/			
+			// 删除
+			if (flag) 
+				itVec = tmp.erase(itVec);
+			else
+				++itVec;
+		}
+
+		contours.push_back(record);
+	}
 
 	//显示消耗时间
 	t = ((double)getTickCount() - t)/getTickFrequency();

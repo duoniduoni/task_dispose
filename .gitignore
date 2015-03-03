@@ -3,3 +3,9 @@ task_dispose/Debug/*
 *.ipch
 *.bmp
 task_dispose.opensdf
+*.vcxproj
+task_dispose/task_dispose.vcxproj.filters
+*.filters
+*.vcxproj
+task_dispose.v11.suo
+*.sdf
