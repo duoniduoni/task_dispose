@@ -57,10 +57,10 @@ void Contour::getContourRect()
 			bottom = points[i].y;
 	}
 
-	range = cvRect(left, top, right - left, bottom - top);
+	range = cvRect(left, top, right - left + 1, bottom - top + 1);
 }
 
-void Contour::drawContour(Mat & show)
+void Contour::drawContour(Mat & show, bool drawRectange)
 {
 	if(!show.data)
 		return ;
@@ -79,7 +79,9 @@ void Contour::drawContour(Mat & show)
 	color[2] = 100 + rand() % 155;
 	Vec3b * p = show.ptr<Vec3b>(0);
 	int curline = 0;
-//	rectangle(show, range, cvScalar(color[0], color[1], color[2]));
+
+	if(drawRectange)
+		rectangle(show, range, cvScalar(color[0], color[1], color[2]));
 
 	for(int i = 0; i < points.size(); i++)
 	{
@@ -109,7 +111,7 @@ ContourManager::~ContourManager()
 	contours.clear();
 }
 
-void ContourManager::analyse(Mat & src)
+void ContourManager::analyse(Mat & src, int filter)
 {
 	if(!src.data)
 		return ;
@@ -160,7 +162,7 @@ void ContourManager::analyse(Mat & src)
 			}
 		}
 	}
-
+	
 	//进一步分析 进行合并
 	vector<Contour *> tmp = contours;
 	contours.clear();
@@ -180,21 +182,19 @@ void ContourManager::analyse(Mat & src)
 			Contour & con2 = *(*itVec);
 
 			CvPoint center1, center2;
-			center1.x = con1.getRectange().x + con1.getRectange().width / 2;
-			center1.y = con1.getRectange().y + con1.getRectange().height / 2;
-			center2.x = con2.getRectange().x + con2.getRectange().width / 2;
-			center2.y = con2.getRectange().y + con2.getRectange().height / 2;
+			center1.x = con1.getRectange().x + con1.getRectange().width / 2 + con1.getRectange().width % 2;
+			center1.y = con1.getRectange().y + con1.getRectange().height / 2 + con1.getRectange().height % 2;
+			center2.x = con2.getRectange().x + con2.getRectange().width / 2 + con2.getRectange().width % 2;
+			center2.y = con2.getRectange().y + con2.getRectange().height / 2 + con2.getRectange().height % 2;
 
 			int width1 = con1.getRectange().width;
 			int width2 = con2.getRectange().width;
 			int height1 = con1.getRectange().height;
 			int height2 = con2.getRectange().height;
 	
-
-			if(
-				abs(center1.x - center2.x) <= (width1 + width2)/2 &&
-				abs(center1.y - center2.y) <= (height1 + height2)/2
-				)
+			bool flag1 = abs(center1.x - center2.x) <= (width1 + width2)/2;
+			bool flag2 = abs(center1.y - center2.y) <= (height1 + height2)/2;
+			if( flag1 && flag2 )
 			{
 				//包含
 				flag = true;
@@ -217,6 +217,22 @@ void ContourManager::analyse(Mat & src)
 		}
 
 		contours.push_back(record);
+	}
+
+	//再进一步分析 省略掉特别小的点
+	vector<Contour *>::iterator itVec = contours.begin();	
+	for ( ; itVec != contours.end(); )
+	{
+		bool flag = false;
+
+		if((*itVec)->getPoints().size() < filter)
+			flag = true;
+
+		// 删除
+		if (flag) 
+			itVec = contours.erase(itVec);
+		else
+			++itVec;
 	}
 
 	//显示消耗时间

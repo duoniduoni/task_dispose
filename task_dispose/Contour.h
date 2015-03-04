@@ -19,7 +19,7 @@ public:
 	vector<CvPoint> & getPoints() { return points; }
 	void addPoint(CvPoint & point);
 
-	void drawContour(Mat & show);
+	void drawContour(Mat & show, bool drawRectange = false);
 	CvRect getRectange() { return range; }
 
 private:
@@ -35,7 +35,7 @@ public:
 	ContourManager();
 	virtual ~ContourManager();
 
-	void analyse(Mat & src);
+	void analyse(Mat & src, int filter = 6);
 
 	int getContourCount() { return contours.size(); }
 	Contour & getContour(int index) { return * contours[min(index, (int)contours.size() -1)]; }

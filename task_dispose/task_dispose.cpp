@@ -52,8 +52,17 @@ int _tmain(int argc, char * argv[])
 	cout << "cm.size() = " << cm.getContourCount() << endl;
 
 	Mat show = Mat::zeros(dst.rows, dst.cols, CV_8UC3);
+	
 	for(int i = 0; i < cm.getContourCount(); ++i)
-		cm.getContour(i).drawContour(show);
+		cm.getContour(i).drawContour(show, false);
+	/*
+	cm.getContour(4).drawContour(show);
+	cm.getContour(7).drawContour(show);
+	
+	cm.getContour(0).drawContour(show);
+	cm.getContour(1).drawContour(show);
+	*/
+
 	imshow(WNAME, show);
 	imwrite("task3.bmp", show);
 
