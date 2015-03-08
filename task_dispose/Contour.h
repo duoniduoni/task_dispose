@@ -42,4 +42,6 @@ public:
 
 private:
 	vector<Contour *> contours;
+
+	void merge();
 };

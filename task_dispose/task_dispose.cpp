@@ -55,16 +55,15 @@ int _tmain(int argc, char * argv[])
 	
 	for(int i = 0; i < cm.getContourCount(); ++i)
 		cm.getContour(i).drawContour(show, false);
-	/*
-	cm.getContour(4).drawContour(show);
-	cm.getContour(7).drawContour(show);
 	
-	cm.getContour(0).drawContour(show);
-	cm.getContour(1).drawContour(show);
-	*/
-
+/*	
+	cm.getContour(13).drawContour(show);
+	cm.getContour(14).drawContour(show);
+	cm.getContour(15).drawContour(show);
+	cm.getContour(19 + 4).drawContour(show);	
+*/
 	imshow(WNAME, show);
-	imwrite("task3.bmp", show);
+	imwrite("c:\\task3.bmp", show);
 
 	cout << "press any key to into next step !" << endl;
 	cvWaitKey(0);

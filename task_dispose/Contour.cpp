@@ -111,6 +111,65 @@ ContourManager::~ContourManager()
 	contours.clear();
 }
 
+void ContourManager::merge()
+{
+	vector<Contour *> tmp = contours;
+	contours.clear();
+
+	while(tmp.size() >= 1)
+	{
+		Contour * record = tmp[0];
+		tmp.erase(tmp.begin());
+
+		vector<Contour *>::iterator itVec = tmp.begin();
+		
+		for ( ; itVec != tmp.end(); )
+		{
+			bool flag = false;
+
+			Contour & con1 = *record;
+			Contour & con2 = *(*itVec);
+
+			CvPoint center1, center2;
+			center1.x = con1.getRectange().x + con1.getRectange().width / 2 + con1.getRectange().width % 2;
+			center1.y = con1.getRectange().y + con1.getRectange().height / 2 + con1.getRectange().height % 2;
+			center2.x = con2.getRectange().x + con2.getRectange().width / 2 + con2.getRectange().width % 2;
+			center2.y = con2.getRectange().y + con2.getRectange().height / 2 + con2.getRectange().height % 2;
+
+			int width1 = con1.getRectange().width;
+			int width2 = con2.getRectange().width;
+			int height1 = con1.getRectange().height;
+			int height2 = con2.getRectange().height;
+	
+			bool flag1 = abs(center1.x - center2.x) <= (width1 + width2)/2;
+			bool flag2 = abs(center1.y - center2.y) <= (height1 + height2)/2;
+			if( flag1 && flag2 )
+			{
+				//包含
+				flag = true;
+
+				for(int i = 0; i < con2.getPoints().size(); ++i)
+					con1.addPoint(con2.getPoints().at(i));
+
+				delete *itVec;
+			}
+			else
+			{
+				//不相连
+			}
+
+			// 删除
+			if (flag) 
+				itVec = tmp.erase(itVec);
+			else
+				++itVec;
+		}
+
+		contours.push_back(record);
+	}
+
+}
+
 void ContourManager::analyse(Mat & src, int filter)
 {
 	if(!src.data)
@@ -164,60 +223,7 @@ void ContourManager::analyse(Mat & src, int filter)
 	}
 	
 	//进一步分析 进行合并
-	vector<Contour *> tmp = contours;
-	contours.clear();
-
-	while(tmp.size() >= 1)
-	{
-		Contour * record = tmp[0];
-		tmp.erase(tmp.begin());
-
-		vector<Contour *>::iterator itVec = tmp.begin();
-		
-		for ( ; itVec != tmp.end(); )
-		{
-			bool flag = false;
-
-			Contour & con1 = *record;
-			Contour & con2 = *(*itVec);
-
-			CvPoint center1, center2;
-			center1.x = con1.getRectange().x + con1.getRectange().width / 2 + con1.getRectange().width % 2;
-			center1.y = con1.getRectange().y + con1.getRectange().height / 2 + con1.getRectange().height % 2;
-			center2.x = con2.getRectange().x + con2.getRectange().width / 2 + con2.getRectange().width % 2;
-			center2.y = con2.getRectange().y + con2.getRectange().height / 2 + con2.getRectange().height % 2;
-
-			int width1 = con1.getRectange().width;
-			int width2 = con2.getRectange().width;
-			int height1 = con1.getRectange().height;
-			int height2 = con2.getRectange().height;
-	
-			bool flag1 = abs(center1.x - center2.x) <= (width1 + width2)/2;
-			bool flag2 = abs(center1.y - center2.y) <= (height1 + height2)/2;
-			if( flag1 && flag2 )
-			{
-				//包含
-				flag = true;
-
-				for(int i = 0; i < con2.getPoints().size(); ++i)
-					con1.addPoint(con2.getPoints().at(i));
-
-				delete *itVec;
-			}
-			else
-			{
-				//不相连
-			}
-/**/			
-			// 删除
-			if (flag) 
-				itVec = tmp.erase(itVec);
-			else
-				++itVec;
-		}
-
-		contours.push_back(record);
-	}
+	merge();
 
 	//再进一步分析 省略掉特别小的点
 	vector<Contour *>::iterator itVec = contours.begin();	
@@ -234,6 +240,9 @@ void ContourManager::analyse(Mat & src, int filter)
 		else
 			++itVec;
 	}
+
+	//再次合并
+	merge();
 
 	//显示消耗时间
 	t = ((double)getTickCount() - t)/getTickFrequency();
